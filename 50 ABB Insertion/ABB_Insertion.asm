@@ -1,55 +1,56 @@
 %include "io.inc"
 
 section .data
-    n dw 2
-    T dw 2, 1, 3
-    c_T dw 3
-    espacio db " ", 0
+    n dw 5
+    T dw 5, 3, 8, 1, 4
+    x dw 2
+    s db " "
 
 section .text
 global main
 
 main:
-    mov ebp, esp ; para depuración correcta
-    
-    mov esi, T  ; Carga la dirección base del arreglo T en esi
-    mov eax, 0  ; Inicializa el registro eax a 0
-    mov ebx, 0  ; Inicializa el registro ebx a 0
-    
-    cmp ebx, [c_T]  ; Compara el contador ebx con el tamaño del arreglo
-    je Fin  ; Si son iguales, salta a Fin
-    
-    jmp Ciclo1  ; Si no, comienza el ciclo de búsqueda
+    mov ebp, esp; for correct debugging
+    mov eax, 0
+    mov ebx, 0
+    mov ecx, 2
+    mov edx, 0
 
-Ciclo1:
-    mov eax, ebx  ; Mueve el índice actual a eax
-    mov edx, [esi + eax*2]  ; Obtiene el valor del arreglo en la posición actual
-    
-    cmp edx, [n]  ; Compara el valor del arreglo con el valor buscado
-    je Encontrado  ; Si son iguales, salta a Encontrado
-    jmp MenorOMayor  ; Si no, compara si el valor del arreglo es menor o mayor que el valor buscado
+loop1:
+    mov eax, ebx
+    mov edx, [T + eax * 2]
+    cmp dl, [x]
+    je print
+    jmp lower_or_greater
 
-MenorOMayor:
-    cmp edx, [n]  ; Compara nuevamente el valor del arreglo con el valor buscado
-    jl Menor  ; Si es menor, salta a Menor
-    jmp Mayor  ; Si no, salta a Mayor
+lower_or_greater:
+    jg lower
+    jmp greater
 
-Menor:
-    imul eax, 2  ; Duplica el índice actual (ebx)
-    add eax, 1   ; Le suma 1 al índice actual duplicado
-    mov ebx, eax  ; Actualiza el índice actual (ebx) con el valor duplicado + 1
-    jmp Ciclo1  ; Salta de nuevo al ciclo de búsqueda
+lower:
+    imul ebx, 2
+    inc ebx
+    cmp bl, [n]
+    jl loop1
+    jmp lower_biggest
 
-Mayor:
-    imul eax, 2  ; Duplica el índice actual (ebx)
-    add eax, 2   ; Le suma 2 al índice actual duplicado
-    mov ebx, eax  ; Actualiza el índice actual (ebx) con el valor duplicado + 2
-    jmp Ciclo1  ; Salta de nuevo al ciclo de búsqueda
+greater:
+    imul ebx, 2
+    add ebx, 2
+    cmp bl, [n]
+    jl loop1
+    jmp lower_biggest
 
-Encontrado:
-    PRINT_STRING espacio  ; Imprime un espacio para separar los números
-    PRINT_DEC 2, edx  ; Imprime el valor encontrado
-    jmp Fin  ; Salta a la etiqueta Fin
+lower_biggest:
+    cmp dl, [x]
+    jg print
+    inc eax
+    xor edx, edx
+    div ecx
+    dec eax
+    mov edx, [T + eax * 2]
+    loop lower_biggest    
 
-Fin:
-    ret  ; Retorna de la función
+print:
+    PRINT_DEC 2, eax
+    ret
